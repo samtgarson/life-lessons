@@ -5,9 +5,9 @@
   "author": "",
   "private": true,
   "dependencies": {
-    "nuxtent": "latest",
+    "@nuxtjs/axios": "latest",
     "nuxt": "^1.0.0-rc11",
-    "@nuxtjs/axios": "latest"
+    "nuxtent": "latest"
   },
   "scripts": {
     "dev": "nuxt",
@@ -25,6 +25,10 @@
     "eslint-loader": "^1.6.1",
     "eslint-plugin-html": "^2.0.0",
     "eslint-plugin-promise": "^3.4.1",
-    "eslint-plugin-standard": "^2.0.1"
+    "eslint-plugin-standard": "^2.0.1",
+    "node-sass": "^4.5.3",
+    "pug": "^2.0.0-rc.4",
+    "pug-loader": "^2.3.0",
+    "sass-loader": "^6.0.6"
   }
 }

@@ -1,13 +1,14 @@
 <template lang="pug">
   section
     ul
-      li(v-for="lesson in lessons") {{ lesson.title }}
+      li(v-for="caseStudy in caseStudies")
+        nuxt-link(:to="caseStudy.path") {{ caseStudy.title }}
 </template>
 <script>
   export default {
     async asyncData ({ app }) {
       return {
-        lessons: await app.$content('/lessons').getAll()
+        caseStudies: await app.$content('/case-studies').getAll()
       }
     }
   }
