@@ -10,38 +10,54 @@ import anime from 'animejs'
 import bulgePoints from '@/assets/box/bulge'
 import boxPoints from '@/assets/box/box'
 
-const easing = 'easeOutBack'
+const easing = 'easeOutQuint'
 const elasticity = 0
 const duration = 300
 const offset = 0
 const baseOptions = { easing, duration, elasticity, offset }
 
+const left = '-15deg'
+const right = '15deg'
+const wiggleAngles = [left, right, left, right, left, right, 0]
+
 export default {
   name: 'lesson',
   data: () => ({
     boxPoints,
-    anime: null
+    anime: null,
+    interval: null
   }),
+  mounted () {
+    this.anime = anime({ duration: 1 })
+    this.interval = setInterval(() =>
+      this.wiggle(),
+    1500)
+  },
+  destroyed () {
+    clearInterval(this.interval)
+  },
   props: {
     lesson: {
       type: Object,
-      required: true
+      default: () => ({})
     },
-    index: Number
+    index: Number,
+    active: Boolean,
+    inactive: Boolean
   },
   watch: {
-    'lesson.active' (n, o) {
+    active (n, o) {
       if (n && !o) return this.activate()
       if (!n && o) return this.activate(true)
     },
-    'lesson.inactive' (n, o) {
+    inactive (n, o) {
       if (n && !o) return this.inactivate()
       if (!n && o) return this.inactivate(true)
     }
   },
   methods: {
     async inactivate (reverse) {
-      this.anime && this.anime.pause()
+      this.anime.pause()
       this.anime = anime.timeline()
 
       this.anime
@@ -49,12 +65,28 @@ export default {
         .add(this.wrapperOptions(reverse, true))
     },
     activate (reverse) {
-      this.anime && this.anime.pause()
+      this.anime.pause()
       this.anime = anime.timeline()
 
       this.anime
         .add(this.svgOptions(reverse))
         .add(this.wrapperOptions(reverse))
+    },
+    wiggle () {
+      if (this.anime.progress < 100) return
+      if (Math.random() < 0.95) return
+
+      this.anime = anime.timeline()
+      wiggleAngles.forEach((a, i) =>
+        this.anime.add(this.wiggleOptions(i)))
+    },
+    wiggleOptions (i) {
+      return {
+        targets: this.$el,
+        rotate: wiggleAngles[i],
+        offset: 70 * i,
+        easing: 'easeOutElastic'
+      }
     },
     svgOptions (reverse = false, inactive = false) {
       const value = reverse || inactive ? boxPoints : bulgePoints
@@ -90,4 +122,16 @@ export default {
   top: -1px
   z-index: -1
   cursor: pointer
+
+.next
+  color: white
+  font-size: 24px
+  polygon
+    fill: transparent
+    stroke: white
+    stroke-alignment: inner
+    stroke-dasharray: 4, 4
+    stroke-linecap: round
+    transform: scale(0.97)
+    transform-origin: 50% 50%
 </style>

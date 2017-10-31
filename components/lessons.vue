@@ -1,13 +1,18 @@
 <template lang="pug">
   ol.lessons
     lesson(
-      v-for="(lesson, index) in decoratedLessons",
+      v-for="(lesson, index) in lessons",
       :lesson="lesson",
       :index="index",
       :key="lesson.permalink",
+      :active="active[lesson.permalink]",
+      :inactive="anyActive && !active[lesson.permalink]",
       @mouseover.native="activate(lesson, true)",
       @mouseout.native="activate(lesson, false)") {{ index + 1 }}
-    li.next ?
+    lesson.next(
+      :active="nextActive",
+      @mouseover.native="nextActive = true",
+      @mouseout.native="nextActive = false") ?
 </template>
 
 <script>
@@ -15,7 +20,10 @@ import Lesson from '@/components/lesson'
 
 export default {
   name: 'lessons',
-  data: () => ({ active: {} }),
+  data: () => ({
+    active: {},
+    nextActive: false
+  }),
   components: { Lesson },
   props: {
     lessons: {
@@ -29,14 +37,7 @@ export default {
     }
   },
   computed: {
-    anyActive () { return Object.values(this.active).some(b => b) },
-    decoratedLessons () {
-      return this.lessons.map(l => ({
-        ...l,
-        active: this.active[l.permalink],
-        inactive: this.anyActive && !this.active[l.permalink]
-      }))
-    }
+    anyActive () { return Object.values(this.active).some(b => b) }
   }
 }
 </script>
@@ -66,12 +67,4 @@ li
 
   &:not(:nth-child(3n))
     margin-right: 8px
-
-  &.next
-    background-color: transparent
-    color: white
-    border: 1px dashed white
-    box-sizing: border-box
-    font-size: 24px
-    line-height: 24px
 </style>
