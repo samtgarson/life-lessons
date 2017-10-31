@@ -10,7 +10,11 @@ import anime from 'animejs'
 import bulgePoints from '@/assets/box/bulge'
 import boxPoints from '@/assets/box/box'
 
-const easing = 'easeInOutQuart'
+const easing = 'easeOutBack'
+const elasticity = 0
+const duration = 300
+const offset = 0
+const baseOptions = { easing, duration, elasticity, offset }
 
 export default {
   name: 'lesson',
@@ -22,43 +26,50 @@ export default {
     lesson: {
       type: Object,
       required: true
-    }
+    },
+    index: Number
   },
   watch: {
     'lesson.active' (n, o) {
       if (n && !o) return this.activate()
       if (!n && o) return this.activate(true)
+    },
+    'lesson.inactive' (n, o) {
+      if (n && !o) return this.inactivate()
+      if (!n && o) return this.inactivate(true)
     }
   },
   methods: {
+    async inactivate (reverse) {
+      this.anime && this.anime.pause()
+      this.anime = anime.timeline()
+
+      this.anime
+        .add(this.svgOptions(reverse, true))
+        .add(this.wrapperOptions(reverse, true))
+    },
     activate (reverse) {
       this.anime && this.anime.pause()
-      this.anime = anime.timeline({
-        duration: 200
-      })
+      this.anime = anime.timeline()
 
       this.anime
         .add(this.svgOptions(reverse))
         .add(this.wrapperOptions(reverse))
     },
-    svgOptions (reverse) {
-      const value = reverse ? boxPoints : bulgePoints
+    svgOptions (reverse = false, inactive = false) {
+      const value = reverse || inactive ? boxPoints : bulgePoints
       return {
+        ...baseOptions,
         targets: this.$refs.path,
-        points: [ { value } ],
-        offset: 0,
-        elasticity: 200,
-        easing
+        points: [ { value } ]
       }
     },
-    wrapperOptions (reverse) {
-      const scale = reverse ? 1 : 1.1
+    wrapperOptions (reverse = false, inactive = false) {
+      const scale = reverse ? 1 : inactive ? 0.925 : 1.1
       return {
+        ...baseOptions,
         targets: this.$el,
-        offset: 0,
-        elasticity: 200,
-        scale,
-        easing
+        scale
       }
     }
   }

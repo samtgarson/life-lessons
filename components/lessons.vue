@@ -3,9 +3,10 @@
     lesson(
       v-for="(lesson, index) in decoratedLessons",
       :lesson="lesson",
+      :index="index",
       :key="lesson.permalink",
-      @mouseover.native="active = lesson.permalink",
-      @mouseout.native="active = false") {{ index + 1 }}
+      @mouseover.native="activate(lesson, true)",
+      @mouseout.native="activate(lesson, false)") {{ index + 1 }}
     li.next ?
 </template>
 
@@ -14,7 +15,7 @@ import Lesson from '@/components/lesson'
 
 export default {
   name: 'lessons',
-  data: () => ({ active: null }),
+  data: () => ({ active: {} }),
   components: { Lesson },
   props: {
     lessons: {
@@ -22,12 +23,18 @@ export default {
       required: true
     }
   },
+  methods: {
+    activate ({ permalink }, active) {
+      this.$set(this.active, permalink, active)
+    }
+  },
   computed: {
+    anyActive () { return Object.values(this.active).some(b => b) },
     decoratedLessons () {
       return this.lessons.map(l => ({
         ...l,
-        active: l.permalink === this.active,
-        inactive: this.active && l.permalink !== this.active
+        active: this.active[l.permalink],
+        inactive: this.anyActive && !this.active[l.permalink]
       }))
     }
   }
