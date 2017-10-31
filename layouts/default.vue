@@ -1,7 +1,12 @@
 <template lang="pug">
-  div
+  main
     nuxt
 </template>
 
-<style>
+<style lang="sass">
+main
+  display: flex
+  align-items: center
+  justify-content: center
+  height: 100vh
 </style>

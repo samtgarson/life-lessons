@@ -1,5 +1,4 @@
 ---
-title: Tell a story
+title: Tell stories
 ---
-
-Hello world
+- Something about telling stories

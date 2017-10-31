@@ -7,9 +7,10 @@ module.exports = {
       { hid: 'description', name: 'description', content: 'Nuxtent project' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.png' }
     ]
   },
+  css: ['@/assets/main.sass'],
   build: {
     extend (config, ctx) {
       if (ctx.isClient) {
