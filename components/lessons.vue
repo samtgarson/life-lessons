@@ -9,7 +9,8 @@
       :inactive="anyActive && !active[lesson.permalink]",
       @mouseover.native="activate(lesson, true)",
       @mouseout.native="activate(lesson, false)") {{ index + 1 }}
-    lesson.next(
+    lesson(
+      :next="true",
       :active="nextActive",
       @mouseover.native="nextActive = true",
       @mouseout.native="nextActive = false") ?

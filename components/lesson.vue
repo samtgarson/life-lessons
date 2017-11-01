@@ -1,12 +1,12 @@
 <template lang="pug">
-  li.lesson
+  li.lesson(:class="{ next, clicked }", @mousedown="clicked = true", @mouseup="clicked=false")
     svg.box(width="52px", height="52px", viewBox="0 0 52 52")
       polygon(ref="path", fill="white", :points="boxPoints")
     slot
 </template>
 
 <script>
-import anime from 'animejs'
+import Anime from 'animejs'
 import bulgePoints from '@/assets/box/bulge'
 import boxPoints from '@/assets/box/box'
 
@@ -20,21 +20,25 @@ const left = '-15deg'
 const right = '15deg'
 const wiggleAngles = [left, right, left, right, left, right, 0]
 
+let animes = {}
+
 export default {
   name: 'lesson',
   data: () => ({
     boxPoints,
-    anime: null,
-    interval: null
+    interval: null,
+    clicked: false
   }),
   mounted () {
-    this.anime = anime({ duration: 1 })
+    if (this.next) return
     this.interval = setInterval(() =>
-      this.wiggle(),
+      this.tryToWiggle(),
     1500)
   },
   destroyed () {
     clearInterval(this.interval)
+  },
+  computed: {
   },
   props: {
     lesson: {
@@ -43,7 +47,8 @@ export default {
     },
     index: Number,
     active: Boolean,
-    inactive: Boolean
+    inactive: Boolean,
+    next: Boolean
   },
   watch: {
     active (n, o) {
@@ -53,39 +58,58 @@ export default {
     inactive (n, o) {
       if (n && !o) return this.inactivate()
       if (!n && o) return this.inactivate(true)
+    },
+    clicked (n, o) {
+      if (n && !o) return this.activate(true, { duration: 1 })
+      if (!n && o) return this.activate(false, { duration: 1 })
     }
   },
   methods: {
-    async inactivate (reverse) {
-      this.anime.pause()
-      this.anime = anime.timeline()
+    async inactivate (reverse, opts = {}) {
+      this.removeAnime()
+      animes[this._uid] = Anime.timeline()
 
-      this.anime
-        .add(this.svgOptions(reverse, true))
-        .add(this.wrapperOptions(reverse, true))
+      animes[this._uid]
+        .add({
+          ...this.svgOptions(reverse, true),
+          ...opts
+        })
+        .add({
+          ...this.wrapperOptions(reverse, true),
+          ...opts
+        })
     },
-    activate (reverse) {
-      this.anime.pause()
-      this.anime = anime.timeline()
+    activate (reverse, opts = {}) {
+      this.removeAnime()
+      animes[this._uid] = Anime.timeline()
 
-      this.anime
-        .add(this.svgOptions(reverse))
-        .add(this.wrapperOptions(reverse))
+      animes[this._uid]
+        .add({
+          ...this.svgOptions(reverse),
+          ...opts
+        })
+        .add({
+          ...this.wrapperOptions(reverse),
+          ...opts
+        })
+    },
+    tryToWiggle () {
+      if (this.active || this.inactive) return
+      if (Math.random() < 0.92) return
+      this.wiggle()
     },
     wiggle () {
-      if (this.anime.progress < 100) return
-      if (Math.random() < 0.95) return
-
-      this.anime = anime.timeline()
+      animes[this._uid] = Anime.timeline()
       wiggleAngles.forEach((a, i) =>
-        this.anime.add(this.wiggleOptions(i)))
+        animes[this._uid].add(this.wiggleOptions(i)))
     },
     wiggleOptions (i) {
       return {
         targets: this.$el,
         rotate: wiggleAngles[i],
         offset: 70 * i,
-        easing: 'easeOutElastic'
+        easing: 'easeOutElastic',
+        elasticity
       }
     },
     svgOptions (reverse = false, inactive = false) {
@@ -103,6 +127,9 @@ export default {
         targets: this.$el,
         scale
       }
+    },
+    removeAnime () {
+      animes[this._uid] && animes[this._uid].pause()
     }
   }
 }
@@ -112,7 +139,7 @@ export default {
 .lesson
   position: relative
   cursor: pointer
-  transform: translate3d(0, 0, 0)
+  transition: transform .05s ease-out
 
 .box
   position: absolute
@@ -123,15 +150,30 @@ export default {
   z-index: -1
   cursor: pointer
 
+@keyframes loop
+  0%
+    stroke-dashoffset: 0
+
+  100%
+    stroke-dashoffset: -8
+
 .next
   color: white
   font-size: 24px
+
   polygon
     fill: transparent
     stroke: white
     stroke-alignment: inner
-    stroke-dasharray: 4, 4
+    stroke-dasharray: 3, 5
     stroke-linecap: round
     transform: scale(0.97)
     transform-origin: 50% 50%
+
+  &:hover polygon
+    animation: loop 1s linear infinite
+
+  &:active polygon
+    animation-direction: reverse
+    animation-duration: 0.4s
 </style>

@@ -2,7 +2,6 @@
   section
     h1 Sam's life lessons.
     lessons(:lessons="lessons")
-    nuxt-link(to="/about")#about What is this?
 </template>
 <script>
   import Lessons from '@/components/lessons'
