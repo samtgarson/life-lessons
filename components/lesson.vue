@@ -1,6 +1,10 @@
 <template lang="pug">
-  li.lesson(:class="{ next, clicked }", @mousedown="clicked = true", @mouseup="clicked=false")
-    svg.box(width="52px", height="52px", viewBox="0 0 52 52")
+  li.lesson(
+    :class="{ next, hidden, chosen }",
+    @mousedown="clicked = true",
+    @mouseup="clicked=false",
+    :style="style")
+    svg.box(width="52px", height="52px", viewBox="0 0 52 52", ref="wrapper")
       polygon(ref="path", fill="white", :points="boxPoints")
     slot
 </template>
@@ -9,12 +13,16 @@
 import Anime from 'animejs'
 import bulgePoints from '@/assets/box/bulge'
 import boxPoints from '@/assets/box/box'
+import widePoints from '@/assets/box/wide'
+// import tallPoints from '@/assets/box/tall'
 
 const easing = 'easeOutQuint'
-const elasticity = 0
-const duration = 300
+const elasticity = 100
+const duration = 400
 const offset = 0
 const baseOptions = { easing, duration, elasticity, offset }
+const size = 50
+const margin = 8
 
 const left = '-15deg'
 const right = '15deg'
@@ -39,6 +47,18 @@ export default {
     clearInterval(this.interval)
   },
   computed: {
+    style () {
+      const left = `${(this.index % 3) * (size + margin)}px`
+      const top = `${Math.floor(this.index / 3) * (size + margin)}px`
+      const width = '50px'
+      const height = '50px'
+      return {
+        left,
+        top,
+        width,
+        height
+      }
+    }
   },
   props: {
     lesson: {
@@ -48,85 +68,96 @@ export default {
     index: Number,
     active: Boolean,
     inactive: Boolean,
-    next: Boolean
+    next: Boolean,
+    hidden: Boolean,
+    chosen: Boolean
   },
   watch: {
     active (n, o) {
+      if (this.chosen || this.hidden) return
       if (n && !o) return this.activate()
       if (!n && o) return this.activate(true)
     },
     inactive (n, o) {
-      if (n && !o) return this.inactivate()
-      if (!n && o) return this.inactivate(true)
+      if (this.chosen || this.hidden) return
+      if (n && !o) return this.activate(false, true)
+      if (!n && o) return this.activate(true, true)
     },
     clicked (n, o) {
-      if (n && !o) return this.activate(true, { duration: 1 })
-      if (!n && o) return this.activate(false, { duration: 1 })
+      if (this.chosen || this.hidden) return
+      if (n && !o) return this.activate(true, false, { duration: 100 })
+      if (!n && o) return this.activate(false, false, { duration: 100 })
+    },
+    chosen (n, o) {
+      if (n && !o) return this.choose(false, { duration: 150 })
+      if (!n && o) return this.choose(true)
+    },
+    hidden (n, o) {
+      if (n && !o) return this.hide(false)
+      if (!n && o) return this.hide(true)
     }
   },
   methods: {
-    async inactivate (reverse, opts = {}) {
+    animate (animation, ...args) {
+      const opts = args.pop()
       this.removeAnime()
       animes[this._uid] = Anime.timeline()
 
-      animes[this._uid]
-        .add({
-          ...this.svgOptions(reverse, true),
-          ...opts
-        })
-        .add({
-          ...this.wrapperOptions(reverse, true),
-          ...opts
-        })
+      this[`${animation}Options`](...args).forEach(o =>
+        animes[this._uid].add({ ...o, ...opts }))
     },
-    activate (reverse, opts = {}) {
-      this.removeAnime()
-      animes[this._uid] = Anime.timeline()
-
-      animes[this._uid]
-        .add({
-          ...this.svgOptions(reverse),
-          ...opts
-        })
-        .add({
-          ...this.wrapperOptions(reverse),
-          ...opts
-        })
+    activate (reverse, inactive, opts = {}) {
+      this.animate('active', reverse, inactive, opts)
+    },
+    choose (reverse) {
+      this.animate('chosen', reverse, { delay: 200 })
+    },
+    hide (reverse) {
+      this.animate('hidden', reverse)
+    },
+    wiggle () {
+      this.animate('wiggle')
     },
     tryToWiggle () {
-      if (this.active || this.inactive) return
+      if (this.active || this.inactive || this.hidden || this.chosen) return
       if (Math.random() < 0.92) return
       this.wiggle()
     },
-    wiggle () {
-      animes[this._uid] = Anime.timeline()
-      wiggleAngles.forEach((a, i) =>
-        animes[this._uid].add(this.wiggleOptions(i)))
-    },
     wiggleOptions (i) {
-      return {
+      return wiggleAngles.map((a, i) => ({
         targets: this.$el,
-        rotate: wiggleAngles[i],
+        rotate: a,
         offset: 70 * i,
         easing: 'easeOutElastic',
         elasticity
-      }
+      }))
     },
-    svgOptions (reverse = false, inactive = false) {
-      const value = reverse || inactive ? boxPoints : bulgePoints
-      return {
-        ...baseOptions,
-        targets: this.$refs.path,
-        points: [ { value } ]
-      }
-    },
-    wrapperOptions (reverse = false, inactive = false) {
+    activeOptions (reverse = false, inactive = false) {
+      const points = reverse || inactive ? boxPoints : bulgePoints
       const scale = reverse ? 1 : inactive ? 0.925 : 1.1
-      return {
-        ...baseOptions,
-        targets: this.$el,
-        scale
-      }
+      return [
+        { targets: this.$refs.path, points },
+        { targets: this.$el, scale }
+      ].map(o => ({ ...baseOptions, ...o }))
+    },
+    chosenOptions (reverse = false) {
+      const width = reverse ? size : 200
+      const viewBox = `0 0 ${width} 52`
+      const points = reverse ? boxPoints : widePoints
+      const translateX = reverse ? 0 : -17
+      const left = reverse ? this.style.left : 0
+      const top = reverse ? this.style.top : 0
+      return [
+        { targets: this.$refs.wrapper, width, offset: 0, viewBox },
+        { targets: this.$el, width, offset: 0, left, top, translateX },
+        { targets: this.$refs.path, points, offset: 0 }
+      ].map(o => ({ ...baseOptions, ...o, easing: 'easeInOutQuint' }))
+    },
+    hiddenOptions (reverse = false) {
+      const opacity = reverse ? 1 : 0
+      return [
+        { targets: this.$el, offset: 0, opacity }
+      ].map(o => ({ ...baseOptions, ...o }))
     },
     removeAnime () {
       animes[this._uid] && animes[this._uid].pause()
@@ -137,14 +168,19 @@ export default {
 
 <style lang="sass" scoped>
 .lesson
-  position: relative
+  position: absolute
   cursor: pointer
-  transition: transform .05s ease-out
+
+  &.chosen
+    transform: translateX(-20px)
+
+  &.hidden
+    pointer-events: none
 
 .box
   position: absolute
   height: 52px
-  width: 52px
+  // width: 52px
   left: -1px
   top: -1px
   z-index: -1

@@ -7,13 +7,20 @@
       :key="lesson.permalink",
       :active="active[lesson.permalink]",
       :inactive="anyActive && !active[lesson.permalink]",
+      :chosen="lesson.permalink === chosen",
+      :hidden="chosen && lesson.permalink !== chosen",
+      @mouseup.native="chosen = lesson.permalink",
       @mouseover.native="activate(lesson, true)",
-      @mouseout.native="activate(lesson, false)") {{ index + 1 }}
+      @mouseout.native="activate(lesson, false)")
+      span {{ index + 1 }}
     lesson(
       :next="true",
       :active="nextActive",
+      :index="lessons.length",
+      :hidden="!!chosen",
       @mouseover.native="nextActive = true",
-      @mouseout.native="nextActive = false") ?
+      @mouseout.native="nextActive = false")
+      span ?
 </template>
 
 <script>
@@ -23,7 +30,8 @@ export default {
   name: 'lessons',
   data: () => ({
     active: {},
-    nextActive: false
+    nextActive: false,
+    chosen: false
   }),
   components: { Lesson },
   props: {
@@ -48,24 +56,21 @@ export default {
 
 ol
   padding: 0
-  display: flex
-  flex-flow: row wrap
   width: 166px
   margin-bottom: -8px
+  position: relative
 
 li
   list-style-type: none
-  width: 50px
-  height: 50px
   color: $blue
-  font-size: 32px
-  line-height: 32px
-  display: flex
-  align-items: center
-  justify-content: center
   cursor: pointer
-  margin-bottom: 8px
 
-  &:not(:nth-child(3n))
-    margin-right: 8px
+  span
+    width: 50px
+    height: 50px
+    display: flex
+    justify-content: center
+    align-items: center
+    font-size: 32px
+    line-height: 32px
 </style>
