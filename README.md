@@ -1,6 +1,6 @@
-# life-lessons
+📔
 
-> Sam's life lessons
+**life-lessons** A record of lessons I've learned
 
 ## Build Setup
 
@@ -21,5 +21,3 @@ $ npm start
 # generate static project
 $ npm run generate
 ```
-
-For detailed explanation on how things work, checkout the [nuxt.js](https://github.com/nuxt/nuxt.js) and [nuxt-content](https://github.com/nuxt-community/nuxtent) docs.
