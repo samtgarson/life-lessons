@@ -7,14 +7,16 @@
     svg.box(width="52px", height="52px", viewBox="0 0 52 52", ref="wrapper")
       polygon(ref="path", fill="white", :points="boxPoints")
     slot
+    appear(:text="lesson.title", v-if="displayTitle")
 </template>
 
 <script>
 import Anime from 'animejs'
+import Appear from '@/components/title'
 import bulgePoints from '@/assets/box/bulge'
 import boxPoints from '@/assets/box/box'
 import widePoints from '@/assets/box/wide'
-// import tallPoints from '@/assets/box/tall'
+import tallPoints from '@/assets/box/tall'
 
 const easing = 'easeOutQuint'
 const elasticity = 100
@@ -32,10 +34,12 @@ let animes = {}
 
 export default {
   name: 'lesson',
+  components: { Appear },
   data: () => ({
     boxPoints,
     interval: null,
-    clicked: false
+    clicked: false,
+    displayTitle: false
   }),
   mounted () {
     if (this.next) return
@@ -105,6 +109,8 @@ export default {
 
       this[`${animation}Options`](...args).forEach(o =>
         animes[this._uid].add({ ...o, ...opts }))
+
+      animes[this._uid].finished.then(() => this.$emit(`complete:${animation}`, ...args))
     },
     activate (reverse, inactive, opts = {}) {
       this.animate('active', reverse, inactive, opts)
@@ -142,16 +148,32 @@ export default {
     },
     chosenOptions (reverse = false) {
       const width = reverse ? size : 200
-      const viewBox = `0 0 ${width} 52`
-      const points = reverse ? boxPoints : widePoints
+      const height = reverse ? size : [
+        { value: size, duration },
+        { value: 200, duration }
+      ]
+      const viewBox = reverse ? `0 0 ${size} 52` : [
+        { value: `0 0 200 52`, duration },
+        { value: `0 0 200 200`, duration }
+      ]
+      const points = reverse ? boxPoints : [
+        { value: widePoints, duration },
+        { value: tallPoints, duration }
+      ]
       const translateX = reverse ? 0 : -17
       const left = reverse ? this.style.left : 0
       const top = reverse ? this.style.top : 0
+      const threshold = reverse ? 30 : 80
       return [
-        { targets: this.$refs.wrapper, width, offset: 0, viewBox },
-        { targets: this.$el, width, offset: 0, left, top, translateX },
+        { targets: this.$refs.wrapper, width, height, offset: 0, viewBox },
+        { targets: this.$el, width, height, offset: 0, left, top, translateX },
         { targets: this.$refs.path, points, offset: 0 }
-      ].map(o => ({ ...baseOptions, ...o, easing: 'easeInOutQuint' }))
+      ].map(o => ({
+        ...baseOptions,
+        ...o,
+        easing: 'easeInOutQuint',
+        update: ({progress}) => { if (progress > threshold) this.displayTitle = !reverse }
+      }))
     },
     hiddenOptions (reverse = false) {
       const opacity = reverse ? 1 : 0
@@ -179,12 +201,16 @@ export default {
 
 .box
   position: absolute
-  height: 52px
-  // width: 52px
   left: -1px
   top: -1px
   z-index: -1
   cursor: pointer
+
+.title
+  text-align: left
+  padding: 10px 17px 0
+  font-size: 1.2em
+  margin: 0
 
 @keyframes loop
   0%

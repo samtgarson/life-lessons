@@ -1,4 +1,4 @@
 ---
-title: Tell stories
+title: Tell stories.
 ---
 - Something about telling stories

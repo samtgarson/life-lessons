@@ -19,6 +19,9 @@
 @import '~assets/global'
 section
   text-align: center
+  width: 200px
+  margin-left: 50vw
+  transform: translateX(-100px)
 
 .lessons
   margin: 0 auto
