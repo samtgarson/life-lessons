@@ -1,11 +1,12 @@
 <template lang="pug">
   li.lesson(
-    :class="{ next, hidden, chosen }",
+    :class="{ next, hidden, chosen, moving }",
     @mousedown="clicked = true",
     @mouseup="clicked=false",
     :style="style")
     svg.box(width="52px", height="52px", viewBox="0 0 52 52", ref="wrapper")
       polygon(ref="path", fill="white", :points="boxPoints")
+    .expander(v-if="!next")
     slot
     appear(:text="lesson.title", v-if="displayTitle")
 </template>
@@ -15,8 +16,6 @@ import Anime from 'animejs'
 import Appear from '@/components/title'
 import bulgePoints from '@/assets/box/bulge'
 import boxPoints from '@/assets/box/box'
-import widePoints from '@/assets/box/wide'
-import tallPoints from '@/assets/box/tall'
 
 const easing = 'easeOutQuint'
 const elasticity = 100
@@ -39,7 +38,8 @@ export default {
     boxPoints,
     interval: null,
     clicked: false,
-    displayTitle: false
+    displayTitle: false,
+    moving: false
   }),
   mounted () {
     if (this.next) return
@@ -78,12 +78,12 @@ export default {
   },
   watch: {
     active (n, o) {
-      if (this.chosen || this.hidden) return
+      if (this.chosen || this.moving) return
       if (n && !o) return this.activate()
       if (!n && o) return this.activate(true)
     },
     inactive (n, o) {
-      if (this.chosen || this.hidden) return
+      if (this.chosen || this.moving) return
       if (n && !o) return this.activate(false, true)
       if (!n && o) return this.activate(true, true)
     },
@@ -103,29 +103,29 @@ export default {
   },
   methods: {
     animate (animation, ...args) {
+      console.log({ animation })
       const opts = args.pop()
       this.removeAnime()
       animes[this._uid] = Anime.timeline()
 
       this[`${animation}Options`](...args).forEach(o =>
         animes[this._uid].add({ ...o, ...opts }))
-
-      animes[this._uid].finished.then(() => this.$emit(`complete:${animation}`, ...args))
     },
     activate (reverse, inactive, opts = {}) {
       this.animate('active', reverse, inactive, opts)
     },
     choose (reverse) {
-      this.animate('chosen', reverse, { delay: 200 })
+      this.animate('chosen', reverse, { delay: reverse ? 0 : duration * 0.65 })
     },
     hide (reverse) {
-      this.animate('hidden', reverse)
+      this.animate('hidden', reverse, { delay: reverse ? duration * 1.75 : 0 })
     },
     wiggle () {
       this.animate('wiggle')
     },
     tryToWiggle () {
       if (this.active || this.inactive || this.hidden || this.chosen) return
+      if (animes[this._uid] && animes[this._uid].progress < 100) return
       if (Math.random() < 0.92) return
       this.wiggle()
     },
@@ -147,42 +147,52 @@ export default {
       ].map(o => ({ ...baseOptions, ...o }))
     },
     chosenOptions (reverse = false) {
-      const width = reverse ? size : 200
+      this.moving = true
+      const width = reverse ? [
+        { value: 200, duration },
+        { value: size, duration }
+      ] : 200
       const height = reverse ? size : [
         { value: size, duration },
         { value: 200, duration }
       ]
-      const viewBox = reverse ? `0 0 ${size} 52` : [
-        { value: `0 0 200 52`, duration },
-        { value: `0 0 200 200`, duration }
-      ]
-      const points = reverse ? boxPoints : [
-        { value: widePoints, duration },
-        { value: tallPoints, duration }
-      ]
-      const translateX = reverse ? 0 : -17
-      const left = reverse ? this.style.left : 0
-      const top = reverse ? this.style.top : 0
+      const translateX = reverse ? [
+        { value: -17, duration },
+        { value: 0, duration }
+      ] : -17
+      const left = reverse ? [
+        { value: 0, duration },
+        { value: this.style.left, duration }
+      ] : 0
+      const top = reverse ? [
+        { value: 0, duration },
+        { value: this.style.top, duration }
+      ] : 0
       const threshold = reverse ? 30 : 80
       return [
-        { targets: this.$refs.wrapper, width, height, offset: 0, viewBox },
-        { targets: this.$el, width, height, offset: 0, left, top, translateX },
-        { targets: this.$refs.path, points, offset: 0 }
+        { targets: this.$el, width, height, offset: 0, left, top, translateX }
       ].map(o => ({
         ...baseOptions,
         ...o,
         easing: 'easeInOutQuint',
-        update: ({progress}) => { if (progress > threshold) this.displayTitle = !reverse }
+        run: ({progress}) => { if (progress > threshold) this.displayTitle = !reverse },
+        complete: () => { this.moving = false }
       }))
     },
     hiddenOptions (reverse = false) {
+      this.moving = true
       const opacity = reverse ? 1 : 0
       return [
         { targets: this.$el, offset: 0, opacity }
-      ].map(o => ({ ...baseOptions, ...o }))
+      ].map(o => ({
+        ...baseOptions,
+        ...o,
+        complete: () => { this.moving = false }
+      }))
     },
     removeAnime () {
-      animes[this._uid] && animes[this._uid].pause()
+      if (!animes[this._uid] || animes[this._uid].progress === 100) return
+      animes[this._uid].pause()
     }
   }
 }
@@ -218,6 +228,20 @@ export default {
 
   100%
     stroke-dashoffset: -8
+
+.expander
+  position: absolute
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
+  background-color: white
+  border-radius: 4px
+  z-index: -1
+  transition: .2s transform ease
+
+  .lesson:not(.chosen):not(.moving):hover &
+    transform: scale(0.9)
 
 .next
   color: white

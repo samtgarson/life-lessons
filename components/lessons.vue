@@ -21,19 +21,22 @@
       @mouseover.native="nextActive = true",
       @mouseout.native="nextActive = false")
       span ?
+    appear(text="Back", v-if="displayBack", @click.native="chosen = false").back
 </template>
 
 <script>
 import Lesson from '@/components/lesson'
+import Appear from '@/components/title'
 
 export default {
   name: 'lessons',
   data: () => ({
     active: {},
     nextActive: false,
-    chosen: false
+    chosen: false,
+    displayBack: false
   }),
-  components: { Lesson },
+  components: { Lesson, Appear },
   props: {
     lessons: {
       type: Array,
@@ -41,12 +44,20 @@ export default {
     }
   },
   methods: {
-    activate ({ permalink }, active) {
+    activate ({ permalink, ...rest }, active) {
+      if (!permalink) console.log(rest)
       this.$set(this.active, permalink, active)
     }
   },
   computed: {
     anyActive () { return Object.values(this.active).some(b => b) }
+  },
+  watch: {
+    chosen (n, o) {
+      if (n && !o) return setTimeout(() => { this.displayBack = true }, 1250)
+      if (!n && o) this.activate(this.lessons.find(l => l.permalink === o), false)
+      this.displayBack = n
+    }
   }
 }
 </script>
@@ -73,4 +84,9 @@ li
     align-items: center
     font-size: 32px
     line-height: 32px
+
+.back
+  position: absolute
+  top: 210px
+  color: white
 </style>
