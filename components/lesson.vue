@@ -1,12 +1,14 @@
 <template lang="pug">
-  li.lesson(
-    :class="{ next, hidden, chosen, moving }",
+  nuxt-link.lesson(
+    :to="lesson.permalink",
+    tag="li",
+    :class="{ about, hidden, chosen, moving, wait }",
     @mousedown="clicked = true",
     @mouseup="clicked=false",
     :style="style")
     svg.box(width="52px", height="52px", viewBox="0 0 52 52", ref="wrapper")
       polygon(ref="path", fill="white", :points="boxPoints")
-    .expander(v-if="!next")
+    .expander(v-if="!about")
     slot
     appear(:text="lesson.title", v-if="displayTitle")
 </template>
@@ -39,10 +41,14 @@ export default {
     interval: null,
     clicked: false,
     displayTitle: false,
-    moving: false
+    moving: false,
+    wait: true
   }),
   mounted () {
-    if (this.next) return
+    this.wait = false
+    if (this.hidden) this.hide()
+    if (this.about) return
+    if (this.chosen) this.choose(false, { duration: 150 })
     this.interval = setInterval(() =>
       this.tryToWiggle(),
     1500)
@@ -72,13 +78,13 @@ export default {
     index: Number,
     active: Boolean,
     inactive: Boolean,
-    next: Boolean,
+    about: Boolean,
     hidden: Boolean,
     chosen: Boolean
   },
   watch: {
     active (n, o) {
-      if (this.chosen || this.moving) return
+      if ((this.chosen) || this.moving || this.hidden) return
       if (n && !o) return this.activate()
       if (!n && o) return this.activate(true)
     },
@@ -97,13 +103,12 @@ export default {
       if (!n && o) return this.choose(true)
     },
     hidden (n, o) {
-      if (n && !o) return this.hide(false)
+      if (n && !o) return this.hide()
       if (!n && o) return this.hide(true)
     }
   },
   methods: {
     animate (animation, ...args) {
-      console.log({ animation })
       const opts = args.pop()
       this.removeAnime()
       animes[this._uid] = Anime.timeline()
@@ -170,14 +175,22 @@ export default {
       ] : 0
       const threshold = reverse ? 30 : 80
       return [
-        { targets: this.$el, width, height, offset: 0, left, top, translateX }
-      ].map(o => ({
-        ...baseOptions,
-        ...o,
-        easing: 'easeInOutQuint',
-        run: ({progress}) => { if (progress > threshold) this.displayTitle = !reverse },
-        complete: () => { this.moving = false }
-      }))
+        { ...baseOptions, targets: this.$refs.path, points: boxPoints, offset: 0 },
+        {
+          ...baseOptions,
+          targets: this.$el,
+          width,
+          height,
+          offset: 0,
+          left,
+          top,
+          translateX,
+          scale: 1,
+          easing: 'easeInOutQuint',
+          run: ({ progress }) => { if (progress > threshold) this.displayTitle = !reverse },
+          complete: () => { this.moving = false }
+        }
+      ]
     },
     hiddenOptions (reverse = false) {
       this.moving = true
@@ -203,7 +216,7 @@ export default {
   position: absolute
   cursor: pointer
 
-  &.chosen
+  &.chosen:not(.wait)
     transform: translateX(-20px)
 
   &.hidden
@@ -243,7 +256,7 @@ export default {
   .lesson:not(.chosen):not(.moving):hover &
     transform: scale(0.9)
 
-.next
+.about
   color: white
   font-size: 24px
 

@@ -5,5 +5,5 @@
 
 <style lang="sass">
 main
-  padding-top: 20vw
+  padding-top: 18vw
 </style>
