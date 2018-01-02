@@ -1,6 +1,6 @@
 <template lang="pug">
   section
-    h1 Sam's life lessons.
+    h1 Learned lessons.
     lessons(:lessons="lessons")
 </template>
 <script>

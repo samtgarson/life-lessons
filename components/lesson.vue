@@ -4,11 +4,11 @@
     tag="li",
     :class="{ about, hidden, chosen, moving, wait }",
     @mousedown="clicked = true",
-    @mouseup="clicked=false",
+    @mouseup="clicked = false",
     :style="style")
     svg.box(width="52px", height="52px", viewBox="0 0 52 52", ref="wrapper")
       polygon(ref="path", fill="white", :points="boxPoints")
-    .expander(v-if="!about")
+    .expander
     slot
     appear(:text="lesson.title", v-if="displayTitle")
 </template>
@@ -47,8 +47,8 @@ export default {
   mounted () {
     this.wait = false
     if (this.hidden) this.hide()
-    if (this.about) return
     if (this.chosen) this.choose(false, { duration: 150 })
+    if (this.about) return
     this.interval = setInterval(() =>
       this.tryToWiggle(),
     1500)
@@ -68,7 +68,8 @@ export default {
         width,
         height
       }
-    }
+    },
+    about () { return this.lesson.about }
   },
   props: {
     lesson: {
@@ -78,7 +79,6 @@ export default {
     index: Number,
     active: Boolean,
     inactive: Boolean,
-    about: Boolean,
     hidden: Boolean,
     chosen: Boolean
   },
@@ -99,8 +99,10 @@ export default {
       if (!n && o) return this.activate(false, false, { duration: 100 })
     },
     chosen (n, o) {
-      if (n && !o) return this.choose(false, { duration: 150 })
-      if (!n && o) return this.choose(true)
+      // const action = this.about ? this.hide : this.choose
+      const action = this.choose
+      if (n && !o) return action(false, { duration: 150 })
+      if (!n && o) return action(true)
     },
     hidden (n, o) {
       if (n && !o) return this.hide()
@@ -219,6 +221,9 @@ export default {
   &.chosen:not(.wait)
     transform: translateX(-20px)
 
+    svg
+      opacity: 0
+
   &.hidden
     pointer-events: none
 
@@ -234,6 +239,13 @@ export default {
   padding: 10px 17px 0
   font-size: 1.2em
   margin: 0
+
+svg
+  transition: .2s opacity ease
+  transition-delay: .8s
+
+  .chosen &
+    transition-delay: 0s
 
 @keyframes loop
   0%
@@ -251,7 +263,12 @@ export default {
   background-color: white
   border-radius: 4px
   z-index: -1
-  transition: .2s transform ease
+  transition: .2s transform ease, .4s .9s opacity ease
+  opacity: 0
+
+  .chosen &
+    opacity: 1
+    transition-delay: 0s
 
   .lesson:not(.chosen):not(.moving):hover &
     transform: scale(0.9)
@@ -260,11 +277,19 @@ export default {
   color: white
   font-size: 24px
 
+  .title
+    padding-top: 0
+    font-size: 16px
+
+  .expander
+    background-color: transparent
+    border: 1px solid white
+
   polygon
     fill: transparent
     stroke: white
     stroke-alignment: inner
-    stroke-dasharray: 3, 5
+    // stroke-dasharray: 3, 5
     stroke-linecap: round
     transform: scale(0.97)
     transform-origin: 50% 50%

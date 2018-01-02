@@ -7,12 +7,7 @@
         :key="item.key"
         @mouseover.native="activate(item.lesson, true)",
         @mouseout.native="activate(item.lesson, false)")
-        span {{ index + 1 }}
-      lesson(
-        v-bind="aboutItem"
-        @mouseover.native="aboutActive = true",
-        @mouseout.native="aboutActive = false")
-        span ?
+        span {{ item.content }}
       nuxt-link(to="/", v-if="displayBack"): appear(text="Back").back
     //- nuxt-child
 </template>
@@ -21,11 +16,12 @@
 import Lesson from '@/components/lesson'
 import Appear from '@/components/title'
 
+const BACK_DELAY = 1250
+
 export default {
   name: 'lessons',
   data: () => ({
     active: {},
-    aboutActive: false,
     displayBack: false
   }),
   components: { Lesson, Appear },
@@ -46,7 +42,7 @@ export default {
     chosenHasChanged (n, o) {
       if (n && !o) {
         this.lessons.forEach(l => this.activate(l, false))
-        return setTimeout(() => { this.displayBack = true }, 1250)
+        return setTimeout(() => { this.displayBack = true }, BACK_DELAY)
       }
       if (!n && o) {
         this.lessons.forEach(l => this.activate(l, false))
@@ -58,17 +54,6 @@ export default {
     slug () { return this.$route.params.slug },
     chosen () { return this.slug && `/${this.slug}` },
     anyActive () { return Object.values(this.active).some(b => b) },
-    aboutItem () {
-      return {
-        about: true,
-        active: this.aboutActive,
-        index: this.lessons.length,
-        hidden: !!this.chosen,
-        lesson: {
-          permalink: '/'
-        }
-      }
-    },
     items () {
       return this.lessons.map((lesson, index) => ({
         lesson: lesson,
@@ -77,7 +62,8 @@ export default {
         active: this.active[lesson.permalink],
         inactive: this.anyActive && !this.active[lesson.permalink],
         chosen: lesson.permalink === this.chosen,
-        hidden: this.chosen && lesson.permalink !== this.chosen
+        hidden: this.chosen && lesson.permalink !== this.chosen,
+        content: lesson.about ? '?' : index + 1
       }))
     }
   },
