@@ -8,21 +8,16 @@
         @mouseover.native="activate(item.lesson, true)",
         @mouseout.native="activate(item.lesson, false)")
         span {{ item.content }}
-      nuxt-link(to="/", v-if="displayBack"): appear(text="Back").back
-    //- nuxt-child
 </template>
 
 <script>
 import Lesson from '@/components/lesson'
 import Appear from '@/components/title'
 
-const BACK_DELAY = 1250
-
 export default {
   name: 'lessons',
   data: () => ({
-    active: {},
-    displayBack: false
+    active: {}
   }),
   components: { Lesson, Appear },
   props: {
@@ -35,19 +30,18 @@ export default {
     this.chosenHasChanged(this.chosen)
   },
   methods: {
-    activate ({ permalink, ...rest } = {}, active) {
+    async activate ({ permalink, ...rest } = {}, active) {
       if (!permalink) console.error(rest)
+      await this.$nextTick()
       this.$set(this.active, permalink, active)
     },
     chosenHasChanged (n, o) {
       if (n && !o) {
         this.lessons.forEach(l => this.activate(l, false))
-        return setTimeout(() => { this.displayBack = true }, BACK_DELAY)
       }
       if (!n && o) {
         this.lessons.forEach(l => this.activate(l, false))
       }
-      this.displayBack = !!n
     }
   },
   computed: {
@@ -100,9 +94,4 @@ li
     align-items: center
     font-size: 32px
     line-height: 32px
-
-.back
-  position: absolute
-  top: 210px
-  color: white
 </style>

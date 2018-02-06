@@ -1,5 +1,5 @@
 <template lang="pug">
-  nuxtent-body(:body="post.body")
+  nuxtent-body(:body="post.body").body
 </template>
 
 <script>
@@ -10,6 +10,9 @@ export default {
 }
 </script>
 
-<style>
-
+<style lang="sass" scoped>
+.body
+  text-align: left
+  font-size: 15px
+  line-height: 150%
 </style>

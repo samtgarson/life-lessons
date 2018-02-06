@@ -1,16 +1,14 @@
 <template lang="pug">
-  nuxt-link.lesson(
-    :to="lesson.permalink",
-    tag="li",
-    :class="{ about, hidden, chosen, moving, wait }",
-    @mousedown="clicked = true",
-    @mouseup="clicked = false",
+  li.lesson(
+    :class="{ about, hidden, chosen, moving, wait }"
     :style="style")
     svg.box(width="52px", height="52px", viewBox="0 0 52 52", ref="wrapper")
       polygon(ref="path", fill="white", :points="boxPoints")
     .expander
-    slot
+    nuxt-link(:to="lesson.permalink"): slot
     appear(:text="lesson.title", v-if="displayTitle")
+    .footer
+      nuxt-link(to="/", v-if="displayBack"): appear(text="Back").back
 </template>
 
 <script>
@@ -25,6 +23,7 @@ const duration = 400
 const offset = 0
 const baseOptions = { easing, duration, elasticity, offset }
 const size = 50
+const aboutHeight = 350
 const margin = 8
 
 const left = '-15deg'
@@ -42,16 +41,15 @@ export default {
     clicked: false,
     displayTitle: false,
     moving: false,
-    wait: true
+    wait: true,
+    displayBack: false
   }),
   mounted () {
     this.wait = false
     if (this.hidden) this.hide()
     if (this.chosen) this.choose(false, { duration: 150 })
     if (this.about) return
-    this.interval = setInterval(() =>
-      this.tryToWiggle(),
-    1500)
+    this.interval = setInterval(() => this.tryToWiggle(), 1500)
   },
   destroyed () {
     clearInterval(this.interval)
@@ -84,7 +82,7 @@ export default {
   },
   watch: {
     active (n, o) {
-      if ((this.chosen) || this.moving || this.hidden) return
+      if (this.chosen || this.moving || this.hidden) return
       if (n && !o) return this.activate()
       if (!n && o) return this.activate(true)
     },
@@ -99,10 +97,8 @@ export default {
       if (!n && o) return this.activate(false, false, { duration: 100 })
     },
     chosen (n, o) {
-      // const action = this.about ? this.hide : this.choose
-      const action = this.choose
-      if (n && !o) return action(false, { duration: 150 })
-      if (!n && o) return action(true)
+      if (n && !o) return this.choose(false, { duration: 150 })
+      if (!n && o) return this.choose(true)
     },
     hidden (n, o) {
       if (n && !o) return this.hide()
@@ -117,12 +113,20 @@ export default {
 
       this[`${animation}Options`](...args).forEach(o =>
         animes[this._uid].add({ ...o, ...opts }))
+
+      return animes[this._uid].finished
     },
     activate (reverse, inactive, opts = {}) {
       this.animate('active', reverse, inactive, opts)
     },
-    choose (reverse) {
-      this.animate('chosen', reverse, { delay: reverse ? 0 : duration * 0.65 })
+    async choose (reverse) {
+      reverse
+        ? this.displayBack = false
+        : setTimeout(() => { this.displayBack = true }, 1250)
+
+      this.moving = true
+      await this.animate('chosen', reverse, { delay: reverse ? 0 : duration * 0.65 })
+      this.moving = false
     },
     hide (reverse) {
       this.animate('hidden', reverse, { delay: reverse ? duration * 1.75 : 0 })
@@ -154,43 +158,50 @@ export default {
       ].map(o => ({ ...baseOptions, ...o }))
     },
     chosenOptions (reverse = false) {
-      this.moving = true
-      const width = reverse ? [
-        { value: 200, duration },
-        { value: size, duration }
-      ] : 200
-      const height = reverse ? size : [
-        { value: size, duration },
-        { value: 200, duration }
-      ]
-      const translateX = reverse ? [
-        { value: -17, duration },
-        { value: 0, duration }
-      ] : -17
-      const left = reverse ? [
-        { value: 0, duration },
-        { value: this.style.left, duration }
-      ] : 0
-      const top = reverse ? [
-        { value: 0, duration },
-        { value: this.style.top, duration }
-      ] : 0
-      const threshold = reverse ? 30 : 80
+      const args = {
+        reverse: {
+          width: [
+            { value: 200, duration },
+            { value: size, duration }
+          ],
+          height: size,
+          translateX: [
+            { value: -17, duration },
+            { value: 0, duration }
+          ],
+          left: [
+            { value: 0, duration },
+            { value: this.style.left, duration }
+          ],
+          top: [
+            { value: 0, duration },
+            { value: this.style.top, duration }
+          ]
+        },
+        default: {
+          width: 200,
+          height: [
+            { value: size, duration },
+            { value: this.about ? aboutHeight : 200, duration }
+          ],
+          translateX: -17,
+          left: 0,
+          top: 0
+        }
+      }
+      const threshold = reverse ? 0 : 80
       return [
         { ...baseOptions, targets: this.$refs.path, points: boxPoints, offset: 0 },
         {
           ...baseOptions,
+          ...args[reverse ? 'reverse' : 'default'],
           targets: this.$el,
-          width,
-          height,
           offset: 0,
-          left,
-          top,
-          translateX,
           scale: 1,
           easing: 'easeInOutQuint',
-          run: ({ progress }) => { if (progress > threshold) this.displayTitle = !reverse },
-          complete: () => { this.moving = false }
+          run: ({ progress }) => {
+            if (progress > threshold) this.displayTitle = !reverse
+          }
         }
       ]
     },
@@ -219,8 +230,6 @@ export default {
   cursor: pointer
 
   &.chosen:not(.wait)
-    transform: translateX(-20px)
-
     svg
       opacity: 0
 
@@ -275,11 +284,10 @@ svg
 
 .about
   color: white
-  font-size: 24px
 
   .title
     padding-top: 0
-    font-size: 16px
+    font-size: 1em
 
   .expander
     background-color: transparent
@@ -289,7 +297,6 @@ svg
     fill: transparent
     stroke: white
     stroke-alignment: inner
-    // stroke-dasharray: 3, 5
     stroke-linecap: round
     transform: scale(0.97)
     transform-origin: 50% 50%
@@ -300,4 +307,15 @@ svg
   &:active polygon
     animation-direction: reverse
     animation-duration: 0.4s
+
+.footer
+  color: white
+  position: absolute
+  display: inline-block
+  bottom: -40px
+  left: 0
+  right: 0
+
+  .title
+    font-size: 16px
 </style>
