@@ -7,14 +7,7 @@
         :key="item.key"
         @mouseover.native="activate(item.lesson, true)",
         @mouseout.native="activate(item.lesson, false)")
-        span {{ index + 1 }}
-      lesson(
-        v-bind="aboutItem"
-        @mouseover.native="aboutActive = true",
-        @mouseout.native="aboutActive = false")
-        span ?
-      nuxt-link(to="/", v-if="displayBack"): appear(text="Back").back
-    //- nuxt-child
+        span {{ item.content }}
 </template>
 
 <script>
@@ -24,9 +17,7 @@ import Appear from '@/components/title'
 export default {
   name: 'lessons',
   data: () => ({
-    active: {},
-    aboutActive: false,
-    displayBack: false
+    active: {}
   }),
   components: { Lesson, Appear },
   props: {
@@ -39,36 +30,24 @@ export default {
     this.chosenHasChanged(this.chosen)
   },
   methods: {
-    activate ({ permalink, ...rest } = {}, active) {
+    async activate ({ permalink, ...rest } = {}, active) {
       if (!permalink) console.error(rest)
+      await this.$nextTick()
       this.$set(this.active, permalink, active)
     },
     chosenHasChanged (n, o) {
       if (n && !o) {
         this.lessons.forEach(l => this.activate(l, false))
-        return setTimeout(() => { this.displayBack = true }, 1250)
       }
       if (!n && o) {
         this.lessons.forEach(l => this.activate(l, false))
       }
-      this.displayBack = !!n
     }
   },
   computed: {
     slug () { return this.$route.params.slug },
     chosen () { return this.slug && `/${this.slug}` },
     anyActive () { return Object.values(this.active).some(b => b) },
-    aboutItem () {
-      return {
-        about: true,
-        active: this.aboutActive,
-        index: this.lessons.length,
-        hidden: !!this.chosen,
-        lesson: {
-          permalink: '/'
-        }
-      }
-    },
     items () {
       return this.lessons.map((lesson, index) => ({
         lesson: lesson,
@@ -77,7 +56,8 @@ export default {
         active: this.active[lesson.permalink],
         inactive: this.anyActive && !this.active[lesson.permalink],
         chosen: lesson.permalink === this.chosen,
-        hidden: this.chosen && lesson.permalink !== this.chosen
+        hidden: this.chosen && lesson.permalink !== this.chosen,
+        content: lesson.about ? '?' : index + 1
       }))
     }
   },
@@ -114,9 +94,4 @@ li
     align-items: center
     font-size: 32px
     line-height: 32px
-
-.back
-  position: absolute
-  top: 210px
-  color: white
 </style>

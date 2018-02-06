@@ -4,6 +4,10 @@
   "description": "Sam's life lessons",
   "author": "",
   "private": true,
+  "now": {
+    "name": "samtgarson",
+    "alias": "samtgarson"
+  },
   "dependencies": {
     "@nuxtjs/axios": "latest",
     "animejs": "^2.2.0",

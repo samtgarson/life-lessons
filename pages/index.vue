@@ -1,14 +1,15 @@
 <template lang="pug">
   section
-    h1 Sam's life lessons.
+    h1 Lessons learning.
     lessons(:lessons="lessons")
+    //- nuxt-child.child
 </template>
 <script>
   import Lessons from '@/components/lessons'
 
   export default {
     components: { Lessons },
-    async asyncData ({ app }) {
+    async asyncData ({ app, req }) {
       return {
         lessons: await app.$content('/lessons').getAll()
       }
@@ -30,8 +31,6 @@ h1
   font-weight: 100
   margin-bottom: 40px
 
-#about
-  opacity: .5
-  margin-top: 55px
-  display: block
+.child
+  margin-top: 200px
 </style>
