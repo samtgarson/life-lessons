@@ -11,6 +11,7 @@
 </template>
 
 <script>
+import { mapMutations } from 'vuex'
 import Lesson from '@/components/lesson'
 import Appear from '@/components/title'
 
@@ -30,18 +31,14 @@ export default {
     this.chosenHasChanged(this.chosen)
   },
   methods: {
-    async activate ({ permalink, ...rest } = {}, active) {
-      if (!permalink) console.error(rest)
+    ...mapMutations(['updateHover']),
+    async activate ({ permalink } = {}, active) {
       await this.$nextTick()
       this.$set(this.active, permalink, active)
+      this.updateHover(active)
     },
     chosenHasChanged (n, o) {
-      if (n && !o) {
-        this.lessons.forEach(l => this.activate(l, false))
-      }
-      if (!n && o) {
-        this.lessons.forEach(l => this.activate(l, false))
-      }
+      this.lessons.forEach(l => this.activate(l, false))
     }
   },
   computed: {
@@ -85,7 +82,14 @@ li
   list-style-type: none
   color: $blue
   cursor: pointer
+  transition: .6s color ease-out
+  
+  .green &
+    color: rgba(black, 0.65)
 
+  .light &
+    color: $light-blue
+  
   span
     width: 50px
     height: 50px

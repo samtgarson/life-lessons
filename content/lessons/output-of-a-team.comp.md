@@ -1,5 +1,5 @@
 ---
-title: The most important unit of assesment is the output of a team.
+title: The most important unit of assessment is the output of a team.
 ---
 
 - Value of leadership _and_ followship from every member of the team

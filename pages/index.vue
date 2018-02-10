@@ -6,6 +6,7 @@
 </template>
 <script>
   import Lessons from '@/components/lessons'
+  import { mapState } from 'vuex'
 
   export default {
     components: { Lessons },
@@ -13,7 +14,16 @@
       return {
         lessons: await app.$content('/lessons').getAll()
       }
-    }
+    },
+    head () {
+      const bodyClass = this.$route.name === 'index-slug'
+        ? 'green'
+        : this.hover && 'light'
+      return {
+        bodyAttrs: { class: bodyClass }
+      }
+    },
+    computed: mapState(['hover'])
   }
 </script>
 <style lang="sass">

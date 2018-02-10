@@ -1,12 +1,23 @@
 @import './global'
-@import './fonts'
+// @import './fonts'
+@import url('https://rsms.me/inter/inter-ui.css');
 
-html
+
+body
+  height: 100vh
   background-color: $blue
-  font-family: "Circular"
+  font-family: "Inter UI", sans-serif
+  line-height: 150%
   color: white
   -webkit-font-smoothing: antialiased
   -moz-osx-font-smoothing: grayscale
+  transition: .6s background ease-out
+
+  &.light
+    background-color: $light-blue
+
+  &.green
+    background-color: $green
 
 html,
 body

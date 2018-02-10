@@ -1,6 +1,6 @@
 <template lang="pug">
   li.lesson(
-    :class="{ about, hidden, chosen, moving, wait }"
+    :class="{ active, inactive, about, hidden, chosen, moving, wait }"
     :style="style")
     svg.box(width="52px", height="52px", viewBox="0 0 52 52", ref="wrapper")
       polygon(ref="path", fill="white", :points="boxPoints")
@@ -23,7 +23,7 @@ const duration = 400
 const offset = 0
 const baseOptions = { easing, duration, elasticity, offset }
 const size = 50
-const aboutHeight = 350
+const aboutHeight = 430
 const margin = 8
 
 const left = '-15deg'
@@ -137,7 +137,7 @@ export default {
     tryToWiggle () {
       if (this.active || this.inactive || this.hidden || this.chosen) return
       if (animes[this._uid] && animes[this._uid].progress < 100) return
-      if (Math.random() < 0.92) return
+      if (Math.random() < 0.9) return
       this.wiggle()
     },
     wiggleOptions (i) {
@@ -283,7 +283,8 @@ svg
     transform: scale(0.9)
 
 .about
-  color: white
+  /deep/ span
+    color: white !important
 
   .title
     padding-top: 0
