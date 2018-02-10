@@ -6,7 +6,13 @@
   "private": true,
   "now": {
     "name": "samtgarson",
-    "alias": "samtgarson"
+    "alias": [
+      "samtgarson",
+      "samgarson.xyz",
+      "www.samgarson.xyz",
+      "samgarson.com",
+      "www.samgarson.com"
+    ]
   },
   "dependencies": {
     "@nuxtjs/axios": "latest",
