@@ -7,7 +7,7 @@
         :key="item.key"
         @mouseover.native="activate(item.lesson, true)",
         @mouseout.native="activate(item.lesson, false)")
-        span {{ item.content }}
+        span.content {{ item.content }}
 </template>
 
 <script>
@@ -82,15 +82,15 @@ li
   list-style-type: none
   color: $blue
   cursor: pointer
-  transition: .6s color ease-out
   
-  .green &
-    color: rgba(black, 0.65)
+  .green &:not(.about) span.content
+    color: $body
 
-  .light &
-    color: $light-blue
+  .light &:not(.about) span.content
+    color: $light-blue !important
   
-  span
+  span.content
+    transition: .6s color ease-out
     width: 50px
     height: 50px
     display: flex

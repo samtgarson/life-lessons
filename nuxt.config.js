@@ -24,7 +24,10 @@ module.exports = {
     }
   },
   modules: [
-    ['nuxtent']
+    ['nuxtent'],
+    ['@nuxtjs/google-analytics', {
+      id: 'UA-39309435-3'
+    }]
   ],
   loading: { color: '#3B8070' }
 }

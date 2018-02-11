@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@nuxtjs/axios": "latest",
+    "@nuxtjs/google-analytics": "^2.0.2",
     "animejs": "^2.2.0",
     "nuxt": "^1.0.0-rc11",
     "nuxtent": "latest"

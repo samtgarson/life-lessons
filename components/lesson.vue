@@ -225,6 +225,8 @@ export default {
 </script>
 
 <style lang="sass" scoped>
+@import '~assets/global'
+
 .lesson
   position: absolute
   cursor: pointer
@@ -248,6 +250,7 @@ export default {
   padding: 10px 17px 0
   font-size: 1.2em
   margin: 0
+  color: $body
 
 svg
   transition: .2s opacity ease
@@ -319,4 +322,8 @@ svg
 
   .title
     font-size: 16px
+    color: white
+
+a:visited /deep/ span.content
+  color: $body-faded
 </style>
