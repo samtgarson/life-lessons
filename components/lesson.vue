@@ -248,7 +248,7 @@ export default {
 .title
   text-align: left
   padding: 10px 17px 0
-  font-size: 1.2em
+  font-size: 1.1em
   margin: 0
   color: $body
 
