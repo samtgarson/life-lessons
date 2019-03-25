@@ -2,6 +2,9 @@ import lessons from './assets/lessons.json'
 
 export default {
   head: {
+    htmlAttrs: {
+      lang: 'en'
+    },
     title: 'Lessons Learning',
     meta: [
       { charset: 'utf-8' },
