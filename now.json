@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "name": "samtgarson",
+  "alias": [
+    "samtgarson",
+    "samgarson.xyz",
+    "www.samgarson.xyz",
+    "samgarson.com",
+    "www.samgarson.com",
+    "lessons.samgarson.com"
+  ],
+  "builds": [
+    {
+      "src": "dist/*",
+      "use": "@now/static-build"
+    }
+  ]
+}

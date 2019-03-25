@@ -1,19 +1,24 @@
-<template lang="pug">
-  .lessons
-    ol
-      lesson(
-        v-for="(item, index) in items",
-        v-bind="item",
+<template>
+  <div class="lessons">
+    <ol>
+      <lesson
+        v-for="(item, index) in items"
+        v-bind="item"
         :key="item.key"
-        @mouseover.native="activate(item.lesson, true)",
-        @mouseout.native="activate(item.lesson, false)")
-        span.content {{ item.content }}
+        @mouseover.native="activate(item.lesson, true)"
+        @mouseout.native="activate(item.lesson, false)"
+      >
+        <span class="content">{{ item.content }}</span>
+      </lesson>
+    </ol>
+  </div>
 </template>
 
 <script>
 import { mapMutations } from 'vuex'
+import lessons from '@/assets/lessons'
 import Lesson from '@/components/lesson'
-import Appear from '@/components/title'
+import Appear from '@/components/appear'
 
 export default {
   name: 'lessons',
@@ -21,39 +26,32 @@ export default {
     active: {}
   }),
   components: { Lesson, Appear },
-  props: {
-    lessons: {
-      type: Array,
-      required: true
-    }
-  },
   mounted () {
     this.chosenHasChanged(this.chosen)
   },
   methods: {
     ...mapMutations(['updateHover']),
-    async activate ({ permalink } = {}, active) {
+    async activate ({ slug } = {}, active) {
       await this.$nextTick()
-      this.$set(this.active, permalink, active)
+      this.$set(this.active, slug, active)
       this.updateHover(active)
     },
     chosenHasChanged (n, o) {
-      this.lessons.forEach(l => this.activate(l, false))
+      lessons.forEach(l => this.activate(l, false))
     }
   },
   computed: {
-    slug () { return this.$route.params.slug },
-    chosen () { return this.slug && `/${this.slug}` },
+    chosen () { return this.$route.params.slug },
     anyActive () { return Object.values(this.active).some(b => b) },
     items () {
-      return this.lessons.map((lesson, index) => ({
+      return lessons.map((lesson, index) => ({
         lesson: lesson,
         index: index,
-        key: lesson.permalink,
-        active: this.active[lesson.permalink],
-        inactive: this.anyActive && !this.active[lesson.permalink],
-        chosen: lesson.permalink === this.chosen,
-        hidden: this.chosen && lesson.permalink !== this.chosen,
+        key: lesson.slug,
+        active: this.active[lesson.slug],
+        inactive: this.anyActive && !this.active[lesson.slug],
+        chosen: lesson.slug === this.chosen,
+        hidden: this.chosen && lesson.slug !== this.chosen,
         content: lesson.about ? '?' : index + 1
       }))
     }

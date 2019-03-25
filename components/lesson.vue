@@ -1,19 +1,22 @@
-<template lang="pug">
-  li.lesson(
-    :class="{ active, inactive, about, hidden, chosen, moving, wait }"
-    :style="style")
-    svg.box(width="52px", height="52px", viewBox="0 0 52 52", ref="wrapper")
-      polygon(ref="path", fill="white", :points="boxPoints")
-    .expander
-    nuxt-link(:to="lesson.permalink"): slot
-    appear(:text="lesson.title", v-if="displayTitle")
-    .footer
-      nuxt-link(to="/", v-if="displayBack"): appear(text="Back").back
+<template>
+  <li class="lesson" :class="{ active, inactive, about, hidden, chosen, moving, wait }" :style="style">
+    <svg class="box" width="52px" height="52px" viewBox="0 0 52 52" ref="wrapper">
+      <polygon ref="path" fill="white" :points="boxPoints" />
+    </svg>
+    <div class="expander" />
+    <nuxt-link :to="lesson.slug"><slot /></nuxt-link>
+    <appear :text="lesson.title" v-if="displayTitle" />
+    <footer>
+      <nuxt-link to="/" v-if="displayBack">
+        <appear text="Back" class="back" />
+      </nuxt-link>
+    </footer>
+  </li>
 </template>
 
 <script>
 import Anime from 'animejs'
-import Appear from '@/components/title'
+import Appear from '@/components/appear'
 import bulgePoints from '@/assets/box/bulge'
 import boxPoints from '@/assets/box/box'
 
@@ -245,7 +248,7 @@ export default {
   z-index: -1
   cursor: pointer
 
-.title
+.appear
   text-align: left
   padding: 10px 17px 0
   font-size: 1.1em
@@ -289,7 +292,7 @@ svg
   /deep/ span
     color: white !important
 
-  .title
+  .appear
     padding-top: 0
     font-size: 1em
 
@@ -312,7 +315,7 @@ svg
     animation-direction: reverse
     animation-duration: 0.4s
 
-.footer
+footer
   color: white
   position: absolute
   display: inline-block
@@ -320,7 +323,7 @@ svg
   left: 0
   right: 0
 
-  .title
+  .appear
     font-size: 16px
     color: white
 

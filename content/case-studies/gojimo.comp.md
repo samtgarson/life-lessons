@@ -1,5 +1,0 @@
----
-title: Gojimo
----
-
-Hello world
