@@ -1,21 +1,31 @@
-<template lang="pug">
-  transition(name="fade")
-    .title(:class="{ go }")
-      .paragraph(v-for="paragraph in paragraphs")
-        .wrapper(v-for="word in paragraph", ref="words"): span(v-html="word")
+<template>
+  <transition name="fade">
+    <div class="appear" :class="{ go }">
+      <div class="paragraph" v-for="paragraph in paragraphs">
+        <div class="wrapper" v-for="word in paragraph" ref="words">
+          <span v-html="word" />
+        </div>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script>
 const LINK_REGEX = /\[(.+?)\]\((.+?)\)/g
 const LINK_REPLACE = '<a target="_blank" href="$2">$1</a>'
 export default {
-  name: 'title',
+  name: 'appear',
   props: {
-    text: String
+    text: {
+      type: String,
+      default: ''
+    }
   },
   data: () => ({ go: false }),
   computed: {
     paragraphs () {
+      if (!this.text.length) return []
+
       const splitLine = t => t
         .split(' ')
         .map(t => t.replace(LINK_REGEX, LINK_REPLACE))
