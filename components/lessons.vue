@@ -69,6 +69,7 @@ export default {
 
 .lessons
   padding-left: 17px
+  transform: scale(1.2)
 
 ol
   padding: 0

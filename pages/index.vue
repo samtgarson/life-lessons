@@ -28,13 +28,18 @@ section
   width: 200px
   margin-left: 50vw
   transform: translateX(-100px)
+  padding-bottom: 20vh
 
 .lessons
   margin: 0 auto
 
 h1
-  font-weight: 100
+  font-size: 10vh
+  font-weight: 300
   margin-bottom: 40px
+  margin-left: 100px
+  transform: translateX(-50%)
+  width: 100vw
 
 .child
   margin-top: 200px

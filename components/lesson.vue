@@ -26,7 +26,7 @@ const duration = 400
 const offset = 0
 const baseOptions = { easing, duration, elasticity, offset }
 const size = 50
-const aboutHeight = 430
+const aboutHeight = 400
 const margin = 8
 
 const left = '-15deg'
@@ -240,6 +240,7 @@ export default {
 
   &.hidden
     pointer-events: none
+
 
 .box
   position: absolute
