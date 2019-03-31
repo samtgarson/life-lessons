@@ -1,13 +1,9 @@
 {
   "version": 2,
-  "name": "samtgarson",
+  "name": "life-lessons",
   "alias": [
-    "samtgarson",
-    "samgarson.xyz",
-    "www.samgarson.xyz",
-    "samgarson.com",
-    "www.samgarson.com",
-    "lessons.samgarson.com"
+    "lessons.samgarson.com",
+    "lessons.samgarson.xyz"
   ],
   "builds": [
     {
